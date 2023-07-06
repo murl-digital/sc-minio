@@ -1,14 +1,15 @@
 use std::ops::Add;
 use std::path::Path;
 
-use crate::errors::{Error, S3Error, ValueError, XmlError};
+use crate::errors::{Error, Result, S3Error, ValueError, XmlError};
 use crate::signer::{MAX_MULTIPART_OBJECT_SIZE, MIN_PART_SIZE};
-use crate::types::args::{BaseArgs, ObjectArgs};
+use crate::types::args::{BaseArgs, CopySource, ObjectArgs};
 use crate::types::response::Tags;
 use crate::types::{LegalHold, ObjectStat, Retention};
 use crate::utils::md5sum_hash;
 use crate::Minio;
-use crate::{errors::Result, types::args::CopySource};
+
+use bytes::{Bytes, BytesMut};
 use futures::StreamExt;
 use hyper::body::Bytes;
 use hyper::{header, Method};
@@ -149,7 +150,10 @@ impl Minio {
             .await?)
     }
 
-    pub async fn put_object<B: Into<ObjectArgs>>(&self, args: B, data: Vec<u8>) -> Result<bool> {
+    pub async fn put_object<B: Into<ObjectArgs>>(&self, args: B, data: Bytes) -> Result<()> {
+        if data.len() > MIN_PART_SIZE {
+            return self.put_object_large(args, data).await;
+        }
         let args: ObjectArgs = args.into();
         let range = args.range();
         self._object_executor(Method::PUT, &args, true, true)
@@ -164,7 +168,44 @@ impl Minio {
             .body(data)
             .send_ok()
             .await?;
-        Ok(true)
+        Ok(())
+    }
+
+    /**
+     * Upload large payload in an efficient manner easily.
+     */
+    async fn put_object_large<B: Into<ObjectArgs>>(&self, args: B, stream: Bytes) -> Result<()> {
+        let mpu_args = self.create_multipart_upload(args.into()).await?;
+
+        let len = stream.len();
+        let part_size = MIN_PART_SIZE;
+        let part_count = if len > part_size {
+            len / part_size + 1
+        } else {
+            1
+        };
+        let mut parts = Vec::new();
+        for i in 0..part_count {
+            let start = i * part_size;
+            let end = if i == (part_count - 1) {
+                len
+            } else {
+                start + part_size
+            };
+            let data = stream.slice(start..end);
+            let part = match self.upload_part(&mpu_args, i + 1, data).await {
+                Ok(part) => part,
+                Err(err) => {
+                    self.abort_multipart_upload(&mpu_args).await?;
+                    return Err(err);
+                }
+            };
+            parts.push(part);
+        }
+
+        self.complete_multipart_upload(&mpu_args, parts, None)
+            .await
+            .map(|_| ())
     }
 
     /**
@@ -198,7 +239,7 @@ impl Minio {
     # }
     ```
     */
-    pub async fn fput_object<B: Into<ObjectArgs>, P>(&self, args: B, path: P) -> Result<bool>
+    pub async fn fput_object<B: Into<ObjectArgs>, P>(&self, args: B, path: P) -> Result<()>
     where
         P: AsRef<Path>,
     {
@@ -210,34 +251,40 @@ impl Minio {
             return Err(ValueError::from("max object size is 5TiB").into());
         }
         let part_size = MIN_PART_SIZE;
-        let part_count = file_size / part_size + if file_size % part_size > 0 { 1 } else { 0 };
-        let mut buffer = Vec::with_capacity(MIN_PART_SIZE as usize);
-        unsafe {
-            buffer.set_len(MIN_PART_SIZE as usize);
-        }
+        let part_count = if file_size > part_size {
+            file_size / part_size + 1
+        } else {
+            1
+        };
+
         if part_count == 1 {
+            let mut buffer = BytesMut::with_capacity(file_size);
             let mut seek = 0 as usize;
             while seek < file_size {
-                seek += file.read(&mut buffer[seek..]).await?;
+                seek += file.read_buf(&mut buffer).await?;
             }
-            return self.put_object(args, buffer[..seek].to_vec()).await;
+            return self.put_object(args, buffer.freeze()).await;
         } else {
             let upload_id = self.create_multipart_upload(args.clone()).await?;
             let mut parts = vec![];
-            for i in 1..part_count + 1 {
+            for i in 0..part_count {
                 let mut seek = 0 as usize;
-                let size = if i == part_count {
-                    file_size - MIN_PART_SIZE * (i - 1)
+                let size = if i == (part_count - 1) {
+                    file_size - MIN_PART_SIZE * i
                 } else {
                     MIN_PART_SIZE
                 };
+                let mut buffer = BytesMut::with_capacity(size);
                 while seek < size {
-                    seek += file.read(&mut buffer[seek..]).await?;
+                    seek += match file.read_buf(&mut buffer).await {
+                        Ok(len) => len,
+                        Err(err) => {
+                            self.abort_multipart_upload(&upload_id).await?;
+                            return Err(err)?;
+                        }
+                    };
                 }
-                let part = match self
-                    .upload_part(&upload_id, i, buffer[..seek].to_vec())
-                    .await
-                {
+                let part = match self.upload_part(&upload_id, i + 1, buffer.freeze()).await {
                     Ok(part) => part,
                     Err(err) => {
                         self.abort_multipart_upload(&upload_id).await?;
@@ -249,7 +296,7 @@ impl Minio {
             self.complete_multipart_upload(&upload_id, parts, None)
                 .await?;
         }
-        Ok(true)
+        Ok(())
     }
 
     /**
@@ -373,13 +420,12 @@ impl Minio {
     ) -> Result<bool> {
         let args: ObjectArgs = args.into();
         let legal_hold: LegalHold = LegalHold::new(true);
-        let body = legal_hold.to_xml();
-        let body = body.as_bytes();
-        let md5 = md5sum_hash(body);
+        let body = Bytes::from(legal_hold.to_xml());
+        let md5 = md5sum_hash(&body);
         self._object_executor(Method::PUT, &args, false, false)
             .query("legal-hold", "")
             .header("Content-MD5", &md5)
-            .body(body.to_vec())
+            .body(body)
             .send_ok()
             .await
             .map(|_| true)
@@ -392,13 +438,12 @@ impl Minio {
     ) -> Result<bool> {
         let args: ObjectArgs = args.into();
         let legal_hold: LegalHold = LegalHold::new(false);
-        let body = legal_hold.to_xml();
-        let body = body.as_bytes();
-        let md5 = md5sum_hash(body);
+        let body = Bytes::from(legal_hold.to_xml());
+        let md5 = md5sum_hash(&body);
         self._object_executor(Method::PUT, &args, false, false)
             .query("legal-hold", "")
             .header("Content-MD5", &md5)
-            .body(body.to_vec())
+            .body(body)
             .send_ok()
             .await
             .map(|_| true)
@@ -424,13 +469,12 @@ impl Minio {
     ) -> Result<bool> {
         let args: ObjectArgs = args.into();
         let tags: Tags = tags.into();
-        let body = tags.to_xml();
-        let body = body.as_bytes();
-        let md5 = md5sum_hash(body);
+        let body = Bytes::from(tags.to_xml());
+        let md5 = md5sum_hash(&body);
         self._object_executor(Method::PUT, &args, false, false)
             .query("tagging", "")
             .header("Content-MD5", &md5)
-            .body(body.to_vec())
+            .body(body)
             .send_ok()
             .await
             .map(|_| true)
@@ -466,13 +510,12 @@ impl Minio {
     ) -> Result<bool> {
         let args: ObjectArgs = args.into();
         let tags: Retention = tags.into();
-        let body = tags.to_xml();
-        let body = body.as_bytes();
-        let md5 = md5sum_hash(body);
+        let body = Bytes::from(tags.to_xml());
+        let md5 = md5sum_hash(&body);
         self._object_executor(Method::PUT, &args, false, false)
             .query("retention", "")
             .header("Content-MD5", &md5)
-            .body(body.to_vec())
+            .body(body)
             .send_ok()
             .await
             .map(|_| true)
