@@ -1,5 +1,6 @@
 use std::ops::Add;
 use std::path::Path;
+use std::pin::Pin;
 
 use crate::errors::{Error, Result, S3Error, ValueError, XmlError};
 use crate::signer::{MAX_MULTIPART_OBJECT_SIZE, MIN_PART_SIZE};
@@ -10,8 +11,7 @@ use crate::utils::md5sum_hash;
 use crate::Minio;
 
 use bytes::{Bytes, BytesMut};
-use futures::StreamExt;
-use hyper::body::Bytes;
+use futures::{Stream, StreamExt};
 use hyper::{header, Method};
 use reqwest::Response;
 use tokio::fs::File;
@@ -211,15 +211,45 @@ impl Minio {
     /**
      * Upload large payload in an efficient manner easily.
      */
-    pub async fn put_object_stream<'a, B: Into<ObjectArgs>>(&self, args:B, stream:Bytes) -> Result<()> {
+    pub async fn put_object_stream<'a, B: Into<ObjectArgs>>(&self, args:B, mut stream:Pin<Box<dyn Stream<Item = Result<Bytes>>>>) -> Result<()> {
 
         let mpu_args = self.create_multipart_upload(args.into()).await?;
     
         let mut parts = Vec::new();
-        let mut part_spooler = stream.chunks(1024*1024*5);
-        while let Some(item) = part_spooler.next() {
-            let part = self.upload_part(&mpu_args, parts.len().add(1), item.to_vec()).await?;
-            parts.push(part);   
+        let mut current:Vec<u8> = Vec::with_capacity(1024*1024*6);
+        while let Some(piece) = stream.next().await {
+            if current.len() >= MIN_PART_SIZE {
+                let part = match self.upload_part(&mpu_args, parts.len().add(1), Bytes::copy_from_slice(&current)).await {
+                    Ok(pce) => pce,
+                    Err(e) => {
+                        return match self.abort_multipart_upload(&mpu_args).await {
+                            Ok(_) => Err(e),
+                            Err(err) => Err(err)
+                        }
+                    }
+                };
+                parts.push(part);
+                current.clear();
+            }
+            match piece {
+                Ok(open_piece) => {
+                    current.extend(open_piece.to_vec());
+                },
+                Err(_) => todo!(),
+            }
+        }
+        if current.len() != 0 {
+            let part = match self.upload_part(&mpu_args, parts.len().add(1), Bytes::copy_from_slice(&current)).await {
+                Ok(pce) => pce,
+                Err(e) => {
+                    return match self.abort_multipart_upload(&mpu_args).await {
+                        Ok(_) => Err(e),
+                        Err(err) => Err(err)
+                    }
+                }
+            };
+            parts.push(part);
+            current.clear();
         }
     
         self.complete_multipart_upload(&mpu_args, parts, None).await.map(|_| ())
