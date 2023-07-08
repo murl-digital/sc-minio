@@ -235,13 +235,20 @@ impl Minio {
                 Ok(open_piece) => {
                     current.extend(open_piece.to_vec());
                 },
-                Err(_) => todo!(),
+                Err(e) => {
+                    println!("{:#?}", e);
+                    return match self.abort_multipart_upload(&mpu_args).await {
+                        Ok(_) => Err(e),
+                        Err(err) => Err(err)
+                    }
+                }
             }
         }
         if current.len() != 0 {
             let part = match self.upload_part(&mpu_args, parts.len().add(1), Bytes::copy_from_slice(&current)).await {
                 Ok(pce) => pce,
                 Err(e) => {
+                    println!("{:#?}", e);
                     return match self.abort_multipart_upload(&mpu_args).await {
                         Ok(_) => Err(e),
                         Err(err) => Err(err)

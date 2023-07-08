@@ -19,6 +19,7 @@ use tokio::sync::Mutex;
 /// A `Builder` can be used to create a [`Minio`] with custom configuration.
 pub struct Builder {
     host: Option<String>,
+    chost: Option<String>,
     // access_key: Option<String>,
     // secret_key: Option<String>,
     // session_token: Option<String>,
@@ -33,6 +34,7 @@ impl Builder {
     pub fn new() -> Self {
         Builder {
             host: None,
+            chost: None,
             secure: true,
             region: "us-east-1".to_string(),
             agent: "MinIO (Linux; x86_64) minio-rs".to_string(),
@@ -43,6 +45,12 @@ impl Builder {
 
     /// Set hostname of a S3 service. `[http(s)://]hostname`
     pub fn host<T: Into<String>>(mut self, host: T) -> Self {
+        self.host = Some(host.into());
+        self
+    }
+
+    /// Set hostname of client host domain name or IP
+    pub fn chost<T: Into<String>>(mut self, host: T) -> Self {
         self.host = Some(host.into());
         self
     }
@@ -117,12 +125,15 @@ impl Builder {
             headers.insert(header::USER_AGENT, agent.clone());
             reqwest::Client::builder()
                 .default_headers(headers)
+                .https_only(secure)
+                .max_tls_version(reqwest::tls::Version::TLS_1_2)
                 .build()
                 .unwrap()
         };
         Ok(Minio {
             inner: Arc::new(MinioRef {
                 host: format!("http{}://{}", if self.secure { "s" } else { "" }, host),
+                chost: self.chost.unwrap_or("127.0.0.1".into()),
                 secure,
                 client2,
                 region: self.region,
@@ -156,6 +167,7 @@ pub struct Minio {
 
 struct MinioRef {
     host: String,
+    chost: String,
     secure: bool,
     client2: reqwest::Client,
     region: String,
@@ -176,7 +188,7 @@ impl Minio {
         date: DateTime<Utc>,
         content_length: usize,
     ) {
-        headers.insert(header::HOST, self.inner.host[16..].parse().unwrap());
+        //headers.insert(header::HOST, self.inner.host[16..].parse().unwrap());
         headers.insert(header::USER_AGENT, self.inner.agent.clone());
         if content_length > 0 {
             headers.insert(
@@ -184,8 +196,9 @@ impl Minio {
                 content_length.to_string().parse().unwrap(),
             );
         };
-        headers.insert("x-amz-content-sha256", content_sha256.parse().unwrap());
-        headers.insert("x-amz-date", aws_format_time(&date).parse().unwrap());
+        headers.insert("HOST", self.inner.chost.parse().unwrap());
+        headers.insert("X-Amz-Content-Sha256", content_sha256.parse().unwrap());
+        headers.insert("X-Amz-Date", aws_format_time(&date).parse().unwrap());
     }
 
     pub fn region(&self) -> &str {
