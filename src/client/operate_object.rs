@@ -211,7 +211,7 @@ impl Minio {
     /**
      * Upload large payload in an efficient manner easily.
      */
-    pub async fn put_object_stream<'a, B: Into<ObjectArgs>>(&self, args:B, mut stream:Pin<Box<dyn Stream<Item = Result<Bytes>>>>) -> Result<()> {
+    pub async fn put_object_stream<B: Into<ObjectArgs>>(&self, args:B, mut stream:Pin<Box<dyn Stream<Item = std::result::Result<Bytes, std::io::Error>>>>) -> Result<()> {
 
         let mpu_args = self.create_multipart_upload(args.into()).await?;
     
@@ -233,12 +233,11 @@ impl Minio {
             }
             match piece {
                 Ok(open_piece) => {
-                    current.extend(open_piece.to_vec());
+                    current.extend_from_slice(&open_piece);
                 },
                 Err(e) => {
-                    println!("{:#?}", e);
                     return match self.abort_multipart_upload(&mpu_args).await {
-                        Ok(_) => Err(e),
+                        Ok(_) => Err(e.into()),
                         Err(err) => Err(err)
                     }
                 }
