@@ -19,7 +19,7 @@ use tokio::sync::Mutex;
 /// A `Builder` can be used to create a [`Minio`] with custom configuration.
 pub struct Builder {
     host: Option<String>,
-    chost: Option<String>,
+    // chost: Option<String>,
     // access_key: Option<String>,
     // secret_key: Option<String>,
     // session_token: Option<String>,
@@ -50,10 +50,10 @@ impl Builder {
     }
 
     /// Set hostname of client host domain name or IP
-    pub fn chost<T: Into<String>>(mut self, host: T) -> Self {
-        self.host = Some(host.into());
-        self
-    }
+    // pub fn chost<T: Into<String>>(mut self, host: T) -> Self {
+    //     self.host = Some(host.into());
+    //     self
+    // }
 
     /// Set region name of buckets in S3 service.
     ///
@@ -133,7 +133,7 @@ impl Builder {
         Ok(Minio {
             inner: Arc::new(MinioRef {
                 host: format!("http{}://{}", if self.secure { "s" } else { "" }, host),
-                chost: self.chost.unwrap_or("127.0.0.1".into()),
+                // chost: self.chost.unwrap_or("127.0.0.1".into()),
                 secure,
                 client2,
                 region: self.region,
@@ -188,7 +188,8 @@ impl Minio {
         date: DateTime<Utc>,
         content_length: usize,
     ) {
-        //headers.insert(header::HOST, self.inner.host[16..].parse().unwrap());
+        let i = if self.inner.secure { 8 } else { 7 };
+        headers.insert(header::HOST, self.inner.host[i..].parse().unwrap());
         headers.insert(header::USER_AGENT, self.inner.agent.clone());
         if content_length > 0 {
             headers.insert(
@@ -196,7 +197,7 @@ impl Minio {
                 content_length.to_string().parse().unwrap(),
             );
         };
-        headers.insert("HOST", self.inner.chost.parse().unwrap());
+        // headers.insert("HOST", self.inner.chost.parse().unwrap());
         headers.insert("X-Amz-Content-Sha256", content_sha256.parse().unwrap());
         headers.insert("X-Amz-Date", aws_format_time(&date).parse().unwrap());
     }
