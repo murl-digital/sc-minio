@@ -5,7 +5,7 @@ use std::pin::Pin;
 use crate::errors::{Error, Result, S3Error, ValueError, XmlError};
 use crate::signer::{MAX_MULTIPART_OBJECT_SIZE, MIN_PART_SIZE};
 use crate::types::args::{BaseArgs, CopySource, ObjectArgs};
-use crate::types::response::Tags;
+use crate::types::response::{Tags, CompleteMultipartUploadResult};
 use crate::types::{LegalHold, ObjectStat, Retention};
 use crate::utils::md5sum_hash;
 use crate::Minio;
@@ -181,7 +181,7 @@ impl Minio {
     /**
      * Upload large payload in an efficient manner easily.
      */
-    pub async fn put_object_stream<B: Into<ObjectArgs>>(&self, args:B, mut stream:Pin<Box<dyn Stream<Item = Result<Bytes>>>>) -> Result<()> {
+    pub async fn put_object_stream<B: Into<ObjectArgs>>(&self, args:B, mut stream:Pin<Box<dyn Stream<Item = Result<Bytes>> + Send>>) -> Result<CompleteMultipartUploadResult> {
 
         let mpu_args = self.create_multipart_upload(args.into()).await?;
     
@@ -225,7 +225,7 @@ impl Minio {
             current.clear();
         }
     
-        self.complete_multipart_upload(&mpu_args, parts, None).await.map(|_| ())
+        self.complete_multipart_upload(&mpu_args, parts, None).await
     }
 
     /**
