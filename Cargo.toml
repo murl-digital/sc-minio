@@ -44,6 +44,7 @@ tokio = { version = "^1", features = ["fs"], optional = true }
 
 [features]
 fs-tokio = ["tokio", "async-stream"]
+ext = ["async-stream"]
 
 [dev-dependencies]
 dotenv = "^0.15"
