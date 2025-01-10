@@ -68,8 +68,8 @@ impl Minio {
     /// Get presigned URL of an object to download its data with expiry time.
     /// ## Example
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::client::PresignedArgs;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::client::PresignedArgs;
     /// # async fn example(minio: Minio){
     /// let presigned_get_object: String = minio
     ///     .presigned_get_object(
@@ -98,8 +98,8 @@ impl Minio {
     /// Get presigned URL of an object to upload data with expiry time.
     /// ## Example
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::client::PresignedArgs;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::client::PresignedArgs;
     /// # async fn example(minio: Minio){
     /// let presigned_put_object: String = minio
     ///     .presigned_put_object(

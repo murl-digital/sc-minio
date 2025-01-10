@@ -1,7 +1,7 @@
 use std::env;
 
-use minio_rsc::error::Result;
-use minio_rsc::{provider::StaticProvider, Minio};
+use sc_minio::error::Result;
+use sc_minio::{provider::StaticProvider, Minio};
 
 pub fn get_test_minio() -> Minio {
     dotenv::dotenv().ok();

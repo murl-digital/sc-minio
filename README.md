@@ -1,16 +1,18 @@
-# minio-rsc
-[![Crates.io](https://img.shields.io/crates/v/minio-rsc)](https://crates.io/crates/minio-rsc)
-[![Documentation](https://docs.rs/minio-rsc/badge.svg)](https://docs.rs/minio-rsc)
-[![License](https://img.shields.io/crates/l/minio-rsc)](#license)
+# sc-minio
+[![Crates.io](https://img.shields.io/crates/v/sc-minio)](https://crates.io/crates/sc-minio)
+[![Documentation](https://docs.rs/sc-minio/badge.svg)](https://docs.rs/sc-minio)
+[![License](https://img.shields.io/crates/l/sc-minio)](#license)
 
 Rust Library for Minio. API is compliant with the Amazon S3 protocol.
 
+This is a fork of [sc-minio](https://gitee.com/krealseu/sc-minio) with additional APIs for use with [scalar](https://github.com/murl-digital/scalar-rs)
+
 ## Minio client
 ```rust
-use minio_rsc::client::{BucketArgs, KeyArgs};
-use minio_rsc::error::Result;
-use minio_rsc::provider::StaticProvider;
-use minio_rsc::Minio;
+use sc_minio::client::{BucketArgs, KeyArgs};
+use sc_minio::error::Result;
+use sc_minio::provider::StaticProvider;
+use sc_minio::Minio;
 
 async fn example() -> Result<()> {
     let provider = StaticProvider::new("minio-access-key-test", "minio-secret-key-test", None);
@@ -54,37 +56,37 @@ async fn example() -> Result<()> {
 ## Operations
 | Bucket operations                                                                                                            | Object operations                                                                                                                                 |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [make_bucket](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.make_bucket)                        | [get_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_object)                                               |
-| [list_buckets](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.list_buckets)                      | [fget_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.fget_object)                                             |
-| [bucket_exists](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.bucket_exists)                    | [copy_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.copy_object)                                             |
-| [remove_bucket](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.remove_bucket)                    | [stat_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.stat_object)                                             |
-| [list_object_versions](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.list_object_versions)      | [remove_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.remove_object)                                         |
-| [list_objects](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.list_objects)                      | [put_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.put_object)                                               |
-| [get_bucket_tags](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_bucket_tags)                | [fput_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.fput_object)                                             |
-| [set_bucket_tags](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_bucket_tags)                | [presigned_get_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.presigned_get_object)                           |
-| [del_bucket_tags](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.del_bucket_tags)                | [presigned_put_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.presigned_put_object)                           |
-| [get_bucket_versioning](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_bucket_versioning)    | [is_object_legal_hold_enabled](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.is_object_legal_hold_enabled)           |
-| [set_bucket_versioning](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_bucket_versioning)    | [enable_object_legal_hold_enabled](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.enable_object_legal_hold_enabled)   |
-| [get_object_lock_config](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_object_lock_config)  | [disable_object_legal_hold_enabled](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.disable_object_legal_hold_enabled) |
-| [set_object_lock_config](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_bobject_lock_config) | [get_object_tags](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_object_tags)                                     |
-| [del_object_lock_config](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.del_bobject_lock_config) | [set_object_tags](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_object_tags)                                     |
-| [get_bucket_cors](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_bucket_cors)                | [del_object_tags](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.del_object_tags)                                     |
-| [set_bucket_cors](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_bucket_cors)                | [get_object_retention](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_object_retention)                           |
-| [del_bucket_cors](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.del_bucket_cors)                | [set_object_retention](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_object_retention)                           |
-| [get_bucket_encryption](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.get_bucket_encryption)    | [select_object_content](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.select_object_content)                         |
-| [set_bucket_encryption](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.set_bucket_encryption)    |                                                                                                                                                   |
-| [del_bucket_encryption](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.del_bucket_encryption)    |                                                                                                                                                   |
+| [make_bucket](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.make_bucket)                        | [get_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_object)                                               |
+| [list_buckets](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.list_buckets)                      | [fget_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.fget_object)                                             |
+| [bucket_exists](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.bucket_exists)                    | [copy_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.copy_object)                                             |
+| [remove_bucket](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.remove_bucket)                    | [stat_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.stat_object)                                             |
+| [list_object_versions](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.list_object_versions)      | [remove_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.remove_object)                                         |
+| [list_objects](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.list_objects)                      | [put_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.put_object)                                               |
+| [get_bucket_tags](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_bucket_tags)                | [fput_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.fput_object)                                             |
+| [set_bucket_tags](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_bucket_tags)                | [presigned_get_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.presigned_get_object)                           |
+| [del_bucket_tags](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.del_bucket_tags)                | [presigned_put_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.presigned_put_object)                           |
+| [get_bucket_versioning](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_bucket_versioning)    | [is_object_legal_hold_enabled](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.is_object_legal_hold_enabled)           |
+| [set_bucket_versioning](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_bucket_versioning)    | [enable_object_legal_hold_enabled](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.enable_object_legal_hold_enabled)   |
+| [get_object_lock_config](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_object_lock_config)  | [disable_object_legal_hold_enabled](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.disable_object_legal_hold_enabled) |
+| [set_object_lock_config](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_bobject_lock_config) | [get_object_tags](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_object_tags)                                     |
+| [del_object_lock_config](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.del_bobject_lock_config) | [set_object_tags](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_object_tags)                                     |
+| [get_bucket_cors](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_bucket_cors)                | [del_object_tags](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.del_object_tags)                                     |
+| [set_bucket_cors](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_bucket_cors)                | [get_object_retention](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_object_retention)                           |
+| [del_bucket_cors](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.del_bucket_cors)                | [set_object_retention](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_object_retention)                           |
+| [get_bucket_encryption](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.get_bucket_encryption)    | [select_object_content](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.select_object_content)                         |
+| [set_bucket_encryption](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.set_bucket_encryption)    |                                                                                                                                                   |
+| [del_bucket_encryption](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.del_bucket_encryption)    |                                                                                                                                                   |
 
 ## Features
-- `fs-tokio` which provides asynchronous local file operations based on the tokio. [fput_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.fput_object), [fget_object](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.Minio.html#method.fget_object)
+- `fs-tokio` which provides asynchronous local file operations based on the tokio. [fput_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.fput_object), [fget_object](https://docs.rs/sc-minio/latest/sc_minio/client/struct.Minio.html#method.fget_object)
 
 ## Custom requests
-Implemented by [BaseExecutor](https://docs.rs/minio-rsc/latest/minio_rsc/client/struct.BaseExecutor.html)
+Implemented by [BaseExecutor](https://docs.rs/sc_minio/latest/sc_minio/client/struct.BaseExecutor.html)
 
 ```rust
-use minio_rsc::Minio;
+use sc_minio::Minio;
 use hyper::Method;
-use minio_rsc::errors::Result;
+use sc_minio::errors::Result;
 use reqwest::Response;
 use bytes::Bytes;
 

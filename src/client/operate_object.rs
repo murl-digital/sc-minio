@@ -63,9 +63,9 @@ impl Minio {
     /// Creates a copy of an object that is already stored in Minio.
     /// ## Exapmle
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// use minio_rsc::error::Result;
-    /// use minio_rsc::client::{CopySource, KeyArgs};
+    /// # use sc_minio::Minio;
+    /// use sc_minio::error::Result;
+    /// use sc_minio::client::{CopySource, KeyArgs};
     ///
     /// # async fn example(minio: Minio)->Result<()>{
     /// let src = CopySource::new("bucket","key1");
@@ -93,8 +93,8 @@ impl Minio {
     /// Downloads data of an object to file.
     /// # Exapmle
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio)->Result<()>{
     /// let response = minio.fget_object("bucket", "file.txt", "local_file.txt").await?;
     /// # Ok(())
@@ -131,9 +131,9 @@ impl Minio {
     /// ## Exapmle
     /// ``` rust
     /// use reqwest::Response;
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::client::KeyArgs;
-    /// # use minio_rsc::error::Result;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::client::KeyArgs;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio)->Result<()>{
     /// let response: Response = minio.get_object("bucket", "file.txt").await?;
     /// let key = KeyArgs::new("file.txt").version_id(Some("cdabf31a-9752-4265-b137-6b3961fbaf9b".to_string()));
@@ -180,9 +180,9 @@ impl Minio {
     /// ``` rust
     /// use reqwest::Response;
     /// use std::collections::HashMap;
-    /// use minio_rsc::client::KeyArgs;
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// use sc_minio::client::KeyArgs;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     ///
     /// # async fn example(minio: Minio)->Result<()>{
     /// let data = "hello minio";
@@ -295,8 +295,8 @@ impl Minio {
     /// Uploads data from a file to an object in a bucket.
     /// ## Exapmle
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio)->Result<()>{
     /// minio.fput_object("bucket", "file.txt","localfile.txt").await?;
     /// # Ok(())
@@ -334,8 +334,8 @@ impl Minio {
     /// Remove an object.
     /// ## Exapmle
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio)->Result<()>{
     /// let response = minio.remove_object("bucket", "file.txt").await?;
     /// # Ok(())
@@ -358,8 +358,8 @@ impl Minio {
     /// return Ok(Some([ObjectStat])) if object exists and you have READ access to the object, otherwise return Ok([None])
     /// ## Exapmle
     /// ``` rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio)->Result<()>{
     /// let object_stat = minio.stat_object("bucket", "file.txt").await?;
     /// # Ok(())
@@ -509,9 +509,9 @@ impl Minio {
     /// Get [Tags] of an object.
     /// ## Example
     /// ```rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
-    /// use minio_rsc::client::Tags;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
+    /// use sc_minio::client::Tags;
     ///
     /// # async fn example(minio: Minio)->Result<()>{
     /// let tags: Tags = minio.get_object_tags("bucket", "file.txt").await?;
@@ -534,9 +534,9 @@ impl Minio {
     /// Set [Tags] of an object.
     /// ## Example
     /// ```rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
-    /// use minio_rsc::client::Tags;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
+    /// use sc_minio::client::Tags;
     ///
     /// # async fn example(minio: Minio)->Result<()>{
     /// let mut tags: Tags = Tags::new();
@@ -565,8 +565,8 @@ impl Minio {
     /// Delete tags of an object.
     /// ## Example
     /// ```rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio)->Result<()>{
     /// minio.del_object_tags("bucket", "file.txt").await?;
     /// # Ok(())
@@ -624,9 +624,9 @@ impl Minio {
     /// Filters the contents of an object based on a simple structured query language (SQL) statement.
     /// ## Example
     /// ```rust
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
-    /// use minio_rsc::datatype::{SelectRequest,InputSerialization,CsvInput,CompressionType,JsonOutput};
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
+    /// use sc_minio::datatype::{SelectRequest,InputSerialization,CsvInput,CompressionType,JsonOutput};
     ///     # async fn example(client:Minio) -> Result<()>{
     /// let input_serialization = InputSerialization::new(CsvInput::default(), CompressionType::NONE);
     /// let output_serialization = JsonOutput::default().into();

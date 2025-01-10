@@ -1,7 +1,7 @@
 mod common;
 
 use common::get_test_minio;
-use minio_rsc::error::Result;
+use sc_minio::error::Result;
 use tokio;
 
 pub const MIN_PART_SIZE: usize = 5 * 1024 * 1024; // 5MiB
@@ -18,7 +18,7 @@ async fn test_mutilpart_upload() -> Result<()> {
 
     let task = minio.create_multipart_upload(bucket, object_key).await?;
 
-    let mut parts: Vec<minio_rsc::datatype::Part> = vec![];
+    let mut parts: Vec<sc_minio::datatype::Part> = vec![];
     for i in 0..10 {
         let mut bytes = bytes::BytesMut::with_capacity(MIN_PART_SIZE);
         for _ in 0..MIN_PART_SIZE {

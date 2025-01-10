@@ -20,7 +20,7 @@ macro_rules! get_attr {
         #[doc = concat!("Get [",stringify!($T),"] of a bucket")]
         /// ## Example
         /// ```rust
-        /// # use minio_rsc::{Minio, error::Result};
+        /// # use sc_minio::{Minio, error::Result};
         /// # async fn example(minio: Minio) -> Result<()> {
         #[doc = concat!("let config = minio.", stringify!($name), r#"("bucket").await?;"#)]
         /// # Ok(())}
@@ -103,9 +103,9 @@ impl Minio {
     /// If bucket exists and you have permission to access it, return [Ok(true)], otherwise [Ok(false)]
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::BucketArgs;
-    /// # use minio_rsc::Minio;
-    /// # use minio_rsc::error::Result;
+    /// use sc_minio::client::BucketArgs;
+    /// # use sc_minio::Minio;
+    /// # use sc_minio::error::Result;
     /// # async fn example(minio: Minio) -> Result<()>{
     /// let exists:bool = minio.bucket_exists(BucketArgs::new("bucket")).await?;
     /// let exists:bool = minio.bucket_exists("bucket").await?;
@@ -126,7 +126,7 @@ impl Minio {
     /// List information of all accessible buckets.
     /// ## Example
     /// ```rust
-    /// # use minio_rsc::Minio;
+    /// # use sc_minio::Minio;
     /// # async fn example(minio: Minio){
     /// let (buckets, owner) = minio.list_buckets().await.unwrap();
     /// # }
@@ -142,8 +142,8 @@ impl Minio {
     /// Lists metadata about all versions of the objects in a bucket.
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::ListObjectVersionsArgs;
-    /// # use minio_rsc::Minio;
+    /// use sc_minio::client::ListObjectVersionsArgs;
+    /// # use sc_minio::Minio;
     /// # async fn example(minio: Minio){
     /// let mut args = ListObjectVersionsArgs::default();
     /// args.max_keys = 100;
@@ -169,8 +169,8 @@ impl Minio {
     /// Lists object information of a bucket.
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::ListObjectsArgs;
-    /// # use minio_rsc::Minio;
+    /// use sc_minio::client::ListObjectsArgs;
+    /// # use sc_minio::Minio;
     /// # async fn example(minio: Minio){
     /// let args = ListObjectsArgs::default().max_keys(10);
     /// minio.list_objects("bucket", args).await;
@@ -214,8 +214,8 @@ impl Minio {
     /// Can only be enabled at bucket creation.
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::BucketArgs;
-    /// # use minio_rsc::Minio;
+    /// use sc_minio::client::BucketArgs;
+    /// # use sc_minio::Minio;
     /// # async fn example(minio: Minio){
     /// minio.make_bucket(BucketArgs::new("bucket"), true).await;
     /// minio.make_bucket("bucket", false).await;
@@ -256,8 +256,8 @@ impl Minio {
     /// If the operation succeeds, return [Ok] otherwise [Error]
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::BucketArgs;
-    /// # use minio_rsc::Minio;
+    /// use sc_minio::client::BucketArgs;
+    /// # use sc_minio::Minio;
     /// # async fn example(minio: Minio){
     /// minio.remove_bucket(BucketArgs::new("bucket")).await;
     /// minio.remove_bucket("bucket").await;
@@ -294,9 +294,9 @@ impl Minio {
     /// Note: return [None] if bucket had not set tagging or delete tagging.
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::BucketArgs;
-    /// use minio_rsc::client::Tags;
-    /// # use minio_rsc::{Minio, error::Result};
+    /// use sc_minio::client::BucketArgs;
+    /// use sc_minio::client::Tags;
+    /// # use sc_minio::{Minio, error::Result};
     /// # async fn example(minio: Minio) -> Result<()> {
     /// let tags:Option<Tags> = minio.get_bucket_tags(BucketArgs::new("bucket")).await?;
     /// let tags:Option<Tags> = minio.get_bucket_tags("bucket").await?;
@@ -331,8 +331,8 @@ impl Minio {
     /// Delete [ObjectLockConfig] of a bucket.
     /// ## Example
     /// ```rust
-    /// use minio_rsc::client::BucketArgs;
-    /// # use minio_rsc::{Minio, error::Result};
+    /// use sc_minio::client::BucketArgs;
+    /// # use sc_minio::{Minio, error::Result};
     /// # async fn example(minio: Minio) -> Result<()> {
     /// minio.del_object_lock_config("bucket").await?;
     /// # Ok(())}

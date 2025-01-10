@@ -14,8 +14,8 @@ use crate::utils::md5sum_hash;
 /// use hyper::Method;
 /// use bytes::Bytes;
 /// use reqwest::Response;
-/// use minio_rsc::Minio;
-/// use minio_rsc::error::Result;
+/// use sc_minio::Minio;
+/// use sc_minio::error::Result;
 ///
 /// async fn get_object(minio:Minio)-> Result<Response> {
 ///     let executor = minio.executor(Method::GET);

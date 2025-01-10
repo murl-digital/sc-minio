@@ -15,7 +15,7 @@ impl Minio {
     /// Returns an async stream of [Object]
     /// ## Example
     /// ```rust
-    /// # use minio_rsc::Minio;
+    /// # use sc_minio::Minio;
     /// use futures_util::{stream, StreamExt};
     ///
     /// # async fn example(minio: Minio){

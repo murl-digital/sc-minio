@@ -1,17 +1,17 @@
 [package]
-name = "minio-rsc"
+name = "sc-minio"
 description = "rust for minio, api is compliant with the Amazon S3 protocol."
 keywords = ["minio", "s3", "tokio"]
 version = "0.2.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://gitee.com/krealseu/minio-rsc"
+repository = "https://gitee.com/murl-digital/sc-minio"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "minio_rsc"
+name = "sc_minio"
 path = "src/lib.rs"
 
 [dependencies]

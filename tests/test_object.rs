@@ -5,17 +5,17 @@ use std::str::FromStr;
 
 use common::{create_bucket_if_not_exist, get_test_minio};
 use futures_util::{stream, StreamExt};
-use minio_rsc::client::CopySource;
-use minio_rsc::client::KeyArgs;
-use minio_rsc::client::ObjectLockConfig;
-use minio_rsc::client::Tags;
-use minio_rsc::datatype::CompressionType;
-use minio_rsc::datatype::CsvInput;
-use minio_rsc::datatype::InputSerialization;
-use minio_rsc::datatype::JsonOutput;
-use minio_rsc::datatype::ObjectLockConfiguration;
-use minio_rsc::datatype::SelectRequest;
-use minio_rsc::error::Result;
+use sc_minio::client::CopySource;
+use sc_minio::client::KeyArgs;
+use sc_minio::client::ObjectLockConfig;
+use sc_minio::client::Tags;
+use sc_minio::datatype::CompressionType;
+use sc_minio::datatype::CsvInput;
+use sc_minio::datatype::InputSerialization;
+use sc_minio::datatype::JsonOutput;
+use sc_minio::datatype::ObjectLockConfiguration;
+use sc_minio::datatype::SelectRequest;
+use sc_minio::error::Result;
 use tokio;
 
 #[tokio::main]

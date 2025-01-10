@@ -1,9 +1,9 @@
 mod common;
 
 use common::get_test_minio;
-use minio_rsc::client::{ObjectLockConfig, PresignedArgs, Tags};
-use minio_rsc::datatype::VersioningStatus;
-use minio_rsc::error::Result;
+use sc_minio::client::{ObjectLockConfig, PresignedArgs, Tags};
+use sc_minio::datatype::VersioningStatus;
+use sc_minio::error::Result;
 use tokio;
 
 #[tokio::main]
