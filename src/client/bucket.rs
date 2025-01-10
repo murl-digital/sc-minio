@@ -129,7 +129,7 @@ impl Bucket {
     proxy_object!(get_object_acl, AccessControlPolicy);
 
     /// Construct an object url from a key (filename)
-    pub async fn object_url<K>(&self, key: K) -> String
+    pub fn object_url<K>(&self, key: K) -> String
     where
         K: Into<KeyArgs>,
     {
