@@ -251,7 +251,7 @@ impl Minio {
     /// build uri for bucket/key
     ///
     /// uriencode(key)
-    pub(super) fn _build_uri(&self, bucket: Option<String>, key: Option<String>) -> String {
+    pub fn _build_uri(&self, bucket: Option<String>, key: Option<String>) -> String {
         let scheme = self.scheme();
         let endpoint = self.inner.endpoint.as_str();
         match bucket {
