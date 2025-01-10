@@ -9,7 +9,8 @@ use reqwest::Response;
 use super::{BucketArgs, CopySource, KeyArgs, ListObjectsArgs, ObjectLockConfig, Tags};
 use super::{ObjectStat, SelectObjectReader};
 use crate::datatype::{
-    AccessControlPolicy, CORSConfiguration, ListBucketResult, PublicAccessBlockConfiguration, Retention
+    AccessControlPolicy, CORSConfiguration, ListBucketResult, PublicAccessBlockConfiguration,
+    Retention,
 };
 use crate::datatype::{SelectRequest, ServerSideEncryptionConfiguration};
 use crate::{error::Result, Minio};
@@ -126,6 +127,15 @@ impl Bucket {
     proxy_object!(set_object_retention, (), retention=>Retention);
     proxy_object!(select_object_content, SelectObjectReader, request=>SelectRequest);
     proxy_object!(get_object_acl, AccessControlPolicy);
+
+    /// Construct an object url from a key (filename)
+    pub async fn object_url<K>(&self, key: K) -> String
+    where
+        K: Into<KeyArgs>,
+    {
+        self.client
+            ._build_uri(Some(self.bucket_args().name), Some(key.into().name))
+    }
 
     #[cfg(feature = "fs-tokio")]
     #[inline]
